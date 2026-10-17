@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>DentalCloud — прототип</title>
+	<style>
+		:root {
+			color-scheme: light dark;
+			--bg: light-dark(#f5f7fb, #11151c);
+			--surface: light-dark(#ffffff, #1a202a);
+			--surface2: light-dark(#f8fafc, #202835);
+			--text: light-dark(#172433, #edf3fa);
+			--muted: light-dark(#718096, #9baabd);
+			--line: light-dark(#e6ebf2, #303b4a);
+			--teal: light-dark(#167d82, #53c5c1);
+			--teal-soft: light-dark(#e5f5f3, #203e42);
+			--blue: light-dark(#5279e8, #8aa4ff);
+			--shadow: 0 12px 32px light-dark(#24344d0b, #00000020);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		}
+
+		button,
+		input {
+			font: inherit;
+		}
+
+		button {
+			cursor: pointer;
+		}
+
+		.app {
+			min-height: 100vh;
+			background: var(--bg);
+		}
+
+		.sidebar {
+			width: 244px;
+			position: fixed;
+			inset: 0 auto 0 0;
+			padding: 25px 16px;
+			background: var(--surface);
+			border-right: 1px solid var(--line);
+			display: flex;
+			flex-direction: column;
+			z-index: 5;
+		}
+
+		.brand {
+			display: flex;
+			align-items: center;
+			gap: 11px;
+			padding: 0 10px 29px;
+			font-size: 18px;
+			font-weight: 750;
+			letter-spacing: -.5px;
+		}
+
+		.logo {
+			width: 35px;
+			height: 35px;
+			display: grid;
+			place-items: center;
+			border-radius: 12px;
+			background: #177f83;
+			color: white;
+			box-shadow: 0 5px 14px #177f832b;
+		}
+
+		.brand small {
+			display: block;
+			font-size: 10px;
+			color: var(--muted);
+			font-weight: 600;
+			letter-spacing: 1.5px;
+			margin-top: 1px;
+		}
+
+		.nav-label {
+			padding: 10px 12px 8px;
+			color: var(--muted);
+			font-size: 10px;
+			text-transform: uppercase;
+			font-weight: 750;
+			letter-spacing: 1.4px;
+		}
+
+		.nav {
+			display: grid;
+			gap: 5px;
+		}
+
+		.nav button {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			width: 100%;
+			border: 0;
+			padding: 11px 12px;
+			border-radius: 10px;
+			color: var(--muted);
+			background: transparent;
+			text-align: left;
+			font-weight: 600;
+		}
+
+		.nav button:hover {
+			background: var(--surface2);
+			color: var(--text);
+		}
+
+		.nav button.active {
+			background: var(--teal-soft);
+			color: var(--teal);
+		}
+
+		.nav .ico {
+			width: 19px;
+			text-align: center;
+			font-size: 17px;
+		}
+
+		.sidebar-bottom {
+			margin-top: auto;
+		}
+
+		.help-card {
+			border: 1px solid var(--line);
+			background: var(--surface2);
+			border-radius: 13px;
+			padding: 13px;
+			margin: 12px 3px 17px;
+		}
+
+		.help-card strong {
+			display: block;
+			margin-bottom: 5px;
+			font-size: 12px;
+		}
+
+		.help-card p {
+			margin: 0 0 10px;
+			color: var(--muted);
+			font-size: 11px;
+		}
+
+		.help-card button {
+			border: 1px solid var(--line);
+			background: var(--surface);
+			color: var(--text);
+			border-radius: 8px;
+			padding: 7px 9px;
+			width: 100%;
+			font-size: 11px;
+			font-weight: 700;
+		}
+
+		.profile {
+			border-top: 1px solid var(--line);
+			padding: 17px 7px 0;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.avatar {
+			flex: none;
+			display: grid;
+			place-items: center;
+			border-radius: 50%;
+			font-weight: 750;
+			color: #176d70;
+			background: #d9efec;
+			width: 36px;
+			height: 36px;
+		}
+
+		.profile b {
+			display: block;
+			font-size: 12px;
+		}
+
+		.profile span {
+			color: var(--muted);
+			font-size: 11px;
+		}
+
+		.main {
+			margin-left: 244px;
+			min-height: 100vh;
+		}
+
+		.topbar {
+			height: 76px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 18px;
+			padding: 0 36px;
+			background: var(--surface);
+			border-bottom: 1px solid var(--line);
+		}
+
+		.breadcrumb {
+			color: var(--muted);
+			font-size: 12px;
+		}
+
+		.breadcrumb b {
+			color: var(--text);
+		}
+
+		.top-actions {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.icon-btn {
+			width: 37px;
+			height: 37px;
+			display: grid;
+			place-items: center;
+			border: 1px solid var(--line);
+			border-radius: 11px;
+			color: var(--text);
+			background: var(--surface);
+			position: relative;
+		}
+
+		.dot {
+			position: absolute;
+			width: 7px;
+			height: 7px;
+			background: #e66e68;
+			border: 1px solid var(--surface);
+			border-radius: 50%;
+			right: 7px;
+			top: 7px;
+		}
+
+		.primary {
+			border: 0;
+			background: #177f83;
+			color: white;
+			padding: 10px 14px;
+			border-radius: 10px;
+			font-weight: 700;
+			box-shadow: 0 4px 10px #177f8325;
+		}
+
+		.primary:hover {
+			background: #126c70;
+		}
+
+		.content {
+			max-width: 1440px;
+			margin: auto;
+			padding: 31px 36px 48px;
+		}
+
+		.greeting {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-end;
+			gap: 20px;
+			margin-bottom: 25px;
+		}
+
+		h1 {
+			font-size: 27px;
+			line-height: 1.2;
+			margin: 0 0 7px;
+			letter-spacing: -.9px;
+		}
+
+		.subtitle {
+			color: var(--muted);
+			margin: 0;
+		}
+
+		.date-chip {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			color: var(--muted);
+			background: var(--surface);
+			border: 1px solid var(--line);
+			border-radius: 10px;
+			padding: 9px 12px;
+			font-size: 12px;
+			white-space: nowrap;
+		}
+
+		.stats {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 16px;
+			margin-bottom: 26px;
+		}
+
+		.stat {
+			background: var(--surface);
+			border: 1px solid var(--line);
+			border-radius: 15px;
+			padding: 18px;
+			box-shadow: var(--shadow);
+			min-width: 0;
+		}
+
+		.stat-top {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			color: var(--muted);
+			font-size: 12px;
+			gap: 8px;
+		}
+
+		.stat-icon {
+			width: 34px;
+			height: 34px;
+			border-radius: 10px;
+			display: grid;
+			place-items: center;
+			color: var(--teal);
+			background: var(--teal-soft);
+			font-size: 17px;
+		}
+
+		.stat-value {
+			font-size: 28px;
+			font-weight: 760;
+			letter-spacing: -1px;
+			margin: 12px 0 4px;
+		}
+
+		.stat-note {
+			font-size: 11px;
+			color: var(--muted);
+		}
+
+		.stat-note em {
+			font-style: normal;
+			color: var(--teal);
+			font-weight: 750;
+		}
+
+		.columns {
+			display: grid;
+			grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr);
+			gap: 20px;
+			align-items: start;
+		}
+
+		.panel {
+			border: 1px solid var(--line);
+			border-radius: 15px;
+			background: var(--surface);
+			box-shadow: var(--shadow);
+			overflow: hidden;
+			min-width: 0;
+		}
+
+		.panel-head {
+			padding: 19px 20px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 12px;
+			border-bottom: 1px solid var(--line);
+		}
+
+		.panel-head h2 {
+			font-size: 15px;
+			margin: 0;
+			letter-spacing: -.2px;
+		}
+
+		.panel-head p {
+			margin: 4px 0 0;
+			font-size: 11px;
+			color: var(--muted);
+		}
+
+		.text-btn {
+			background: transparent;
+			border: 0;
+			color: var(--teal);
+			font-weight: 750;
+			font-size: 12px;
+			white-space: nowrap;
+			padding: 5px;
+		}
+
+		.search-wrap {
+			position: relative;
+			padding: 15px 20px 12px;
+		}
+
+		.search-wrap span {
+			position: absolute;
+			left: 33px;
+			top: 25px;
+			color: var(--muted);
+		}
+
+		.search {
+			width: 100%;
+			border: 1px solid var(--line);
+			outline: none;
+			border-radius: 10px;
+			padding: 11px 12px 11px 36px;
+			color: var(--text);
+			background: var(--surface2);
+		}
+
+		.search:focus {
+			border-color: var(--teal);
+			box-shadow: 0 0 0 3px light-dark(#177f8317, #53c5c117);
+		}
+
+		.patient-list {
+			padding: 0 10px 10px;
+		}
+
+		.patient {
+			width: 100%;
+			border: 0;
+			border-radius: 11px;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 12px 10px;
+			text-align: left;
+			background: transparent;
+			color: var(--text);
+		}
+
+		.patient:hover {
+			background: var(--surface2);
+		}
+
+		.patient .avatar {
+			width: 40px;
+			height: 40px;
+			font-size: 12px;
+		}
+
+		.patient-info {
+			flex: 1;
+			min-width: 0;
+		}
+
+		.patient-info b {
+			display: block;
+			font-size: 12px;
+			margin-bottom: 3px;
+		}
+
+		.patient-info span {
+			color: var(--muted);
+			font-size: 11px;
+			display: block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.patient-meta {
+			text-align: right;
+			flex: none;
+		}
+
+		.patient-meta b {
+			font-size: 11px;
+			display: block;
+		}
+
+		.patient-meta span {
+			font-size: 10px;
+			color: var(--muted);
+		}
+
+		.status {
+			display: inline-flex;
+			align-items: center;
+			gap: 5px;
+			font-size: 10px;
+			font-weight: 700;
+			border-radius: 20px;
+			padding: 5px 8px;
+			background: var(--teal-soft);
+			color: var(--teal);
+		}
+
+		.status::before {
+			content: "";
+			width: 5px;
+			height: 5px;
+			border-radius: 50%;
+			background: currentColor;
+		}
+
+		.case-list {
+			padding: 5px 18px 12px;
+		}
+
+		.case {
+			display: flex;
+			gap: 12px;
+			padding: 13px 0;
+			border-bottom: 1px solid var(--line);
+			cursor: pointer;
+		}
+
+		.case:last-child {
+			border-bottom: 0;
+		}
+
+		.case:hover .case-title {
+			color: var(--teal);
+		}
+
+		.case-art {
+			width: 68px;
+			height: 65px;
+			flex: none;
+			border-radius: 11px;
+			overflow: hidden;
+			position: relative;
+			display: grid;
+			place-items: center;
+			background: linear-gradient(140deg, #dcefeb, #f4e9dc);
+			color: #477b79;
+			font-size: 22px;
+		}
+
+		.case-art::before,
+		.case-art::after {
+			content: "";
+			position: absolute;
+			border: 1px solid #ffffff9c;
+			border-radius: 50%;
+			width: 46px;
+			height: 46px;
+		}
+
+		.case-art::after {
+			width: 29px;
+			height: 29px;
+		}
+
+		.case-art span {
+			position: relative;
+			z-index: 1;
+		}
+
+		.case:nth-child(2) .case-art {
+			background: linear-gradient(140deg, #e3e9fc, #f5e5e7);
+			color: #6b7dc2;
+		}
+
+		.case:nth-child(3) .case-art {
+			background: linear-gradient(140deg, #f5e9d9, #e1eee5);
+			color: #8a7956;
+		}
+
+		.case-body {
+			min-width: 0;
+			flex: 1;
+		}
+
+		.case-title {
+			font-weight: 750;
+			font-size: 12px;
+			margin: 2px 0 4px;
+			transition: color .15s;
+		}
+
+		.case-sub {
+			color: var(--muted);
+			font-size: 11px;
+			margin-bottom: 8px;
+		}
+
+		.case-bottom {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+		}
+
+		.case-bottom small {
+			color: var(--muted);
+			font-size: 10px;
+		}
+
+		.tag {
+			background: var(--surface2);
+			border: 1px solid var(--line);
+			padding: 4px 7px;
+			border-radius: 6px;
+			font-size: 9px;
+			color: var(--muted);
+		}
+
+		.empty {
+			padding: 28px 12px;
+			text-align: center;
+			color: var(--muted);
+			font-size: 12px;
+		}
+
+		.footer-note {
+			color: var(--muted);
+			font-size: 10px;
+			text-align: center;
+			margin-top: 25px;
+		}
+
+		.mobile-menu {
+			display: none;
+		}
+
+		.overlay {
+			position: fixed;
+			inset: 0;
+			background: #10192380;
+			z-index: 20;
+			display: none;
+			align-items: center;
+			justify-content: center;
+			padding: 18px;
+		}
+
+		.overlay.show {
+			display: flex;
+		}
+
+		.modal {
+			width: min(720px, 100%);
+			max-height: 90vh;
+			overflow: auto;
+			background: var(--surface);
+			border: 1px solid var(--line);
+			border-radius: 18px;
+			box-shadow: 0 24px 80px #0003;
+		}
+
+		.modal-head {
+			padding: 20px 22px;
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			border-bottom: 1px solid var(--line);
+			gap: 12px;
+		}
+
+		.modal-head h2 {
+			margin: 0 0 4px;
+			font-size: 19px;
+		}
+
+		.modal-head p {
+			margin: 0;
+			color: var(--muted);
+			font-size: 12px;
+		}
+
+		.close {
+			border: 1px solid var(--line);
+			border-radius: 9px;
+			background: var(--surface2);
+			color: var(--text);
+			width: 34px;
+			height: 34px;
+		}
+
+		.modal-content {
+			padding: 20px 22px 24px;
+		}
+
+		.gallery-grid {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 12px;
+		}
+
+		.gallery-item {
+			min-width: 0;
+		}
+
+		.photo {
+			height: 145px;
+			border-radius: 12px;
+			display: grid;
+			place-items: center;
+			position: relative;
+			overflow: hidden;
+			background: linear-gradient(145deg, #e0efed, #f6e6d9);
+			color: #588985;
+		}
+
+		.photo::before {
+			content: "";
+			position: absolute;
+			width: 90px;
+			height: 115px;
+			border-radius: 48% 48% 42% 42%;
+			background: linear-gradient(90deg, #fff, #e8f2f0, #fff);
+			box-shadow: 0 4px 10px #486c6520;
+			transform: rotate(-7deg);
+		}
+
+		.photo::after {
+			content: "";
+			position: absolute;
+			width: 25px;
+			height: 92px;
+			border-radius: 50%;
+			border: 1px solid #d6e4e0;
+			transform: rotate(-7deg);
+		}
+
+		.photo span {
+			position: relative;
+			z-index: 1;
+			font-size: 10px;
+			font-weight: 750;
+			color: #5a8581;
+			margin-top: 80px;
+		}
+
+		.gallery-item b {
+			display: block;
+			font-size: 11px;
+			margin: 8px 0 3px;
+		}
+
+		.gallery-item small {
+			color: var(--muted);
+			font-size: 10px;
+		}
+
+		.modal-actions {
+			display: flex;
+			gap: 9px;
+			flex-wrap: wrap;
+			margin-top: 20px;
+		}
+
+		.secondary {
+			border: 1px solid var(--line);
+			border-radius: 10px;
+			background: var(--surface);
+			color: var(--text);
+			padding: 9px 12px;
+			font-weight: 700;
+		}
+
+		.toast {
+			position: fixed;
+			bottom: 22px;
+			left: 50%;
+			transform: translate(-50%, 20px);
+			background: var(--text);
+			color: var(--surface);
+			border-radius: 10px;
+			padding: 11px 16px;
+			box-shadow: var(--shadow);
+			opacity: 0;
+			pointer-events: none;
+			transition: .2s;
+			z-index: 30;
+			font-size: 12px;
+		}
+
+		.toast.show {
+			opacity: 1;
+			transform: translate(-50%, 0);
+		}
+
+		@media (max-width:1100px) {
+			.sidebar {
+				width: 218px;
+			}
+
+			.main {
+				margin-left: 218px;
+			}
+
+			.content {
+				padding: 27px 23px 40px;
+			}
+
+			.topbar {
+				padding: 0 23px;
+			}
+
+			.stats {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+
+			.columns {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		@media (max-width:700px) {
+			.sidebar {
+				transform: translateX(-100%);
+				transition: transform .2s;
+				box-shadow: var(--shadow);
+				width: 255px;
+			}
+
+			.sidebar.open {
+				transform: translateX(0);
+			}
+
+			.main {
+				margin-left: 0;
+			}
+
+			.topbar {
+				height: 64px;
+				padding: 0 16px;
+			}
+
+			.mobile-menu {
+				display: grid;
+			}
+
+			.breadcrumb {
+				display: none;
+			}
+
+			.top-actions {
+				margin-left: auto;
+			}
+
+			.top-actions .primary {
+				padding: 9px 10px;
+				font-size: 11px;
+			}
+
+			.content {
+				padding: 24px 15px 32px;
+			}
+
+			.greeting {
+				align-items: flex-start;
+				flex-direction: column;
+				margin-bottom: 20px;
+			}
+
+			h1 {
+				font-size: 24px;
+			}
+
+			.date-chip {
+				font-size: 11px;
+			}
+
+			.stats {
+				gap: 10px;
+				margin-bottom: 18px;
+			}
+
+			.stat {
+				padding: 14px;
+				border-radius: 13px;
+			}
+
+			.stat-value {
+				font-size: 25px;
+				margin-top: 10px;
+			}
+
+			.stat-top {
+				font-size: 10px;
+			}
+
+			.stat-icon {
+				width: 30px;
+				height: 30px;
+			}
+
+			.columns {
+				gap: 15px;
+			}
+
+			.panel-head {
+				padding: 16px;
+			}
+
+			.search-wrap {
+				padding: 13px 14px 9px;
+			}
+
+			.search-wrap span {
+				left: 27px;
+				top: 23px;
+			}
+
+			.patient-list {
+				padding: 0 7px 7px;
+			}
+
+			.patient {
+				gap: 9px;
+				padding: 11px 7px;
+			}
+
+			.patient .avatar {
+				width: 36px;
+				height: 36px;
+			}
+
+			.patient-meta .status {
+				font-size: 9px;
+				padding: 4px 6px;
+			}
+
+			.case-list {
+				padding: 4px 14px 10px;
+			}
+
+			.case-art {
+				width: 58px;
+				height: 60px;
+			}
+
+			.gallery-grid {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+
+			.photo {
+				height: 125px;
+			}
+		}
+
+		@media (prefers-reduced-motion:reduce) {
+
+			*,
+			*::before,
+			*::after {
+				transition: none !important;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="app" id="app">
+		<aside class="sidebar" id="sidebar">
+			<div class="brand">
+				<div class="logo">✚</div>
+				<div>Dental<span style="color:var(--teal)">Cloud</span><small>CLINICAL WORKSPACE</small></div>
+			</div>
+			<div class="nav-label">Рабочее пространство</div>
+			<nav class="nav" aria-label="Основная навигация">
+				<button class="active" data-nav="dashboard"><span class="ico">▦</span> Обзор</button>
+				<button data-nav="patients"><span class="ico">♙</span> Пациенты</button>
+				<button data-nav="cases"><span class="ico">▧</span> Клинические случаи</button>
+				<button data-nav="gallery"><span class="ico">▤</span> Фотогалерея</button>
+				<button data-nav="timeline"><span class="ico">◷</span> История визитов</button>
+			</nav>
+			<div class="nav-label" style="margin-top:20px">Настройки</div>
+			<nav class="nav">
+				<button data-nav="portfolio"><span class="ico">◇</span> Портфолио</button>
+				<button data-nav="settings"><span class="ico">⚙</span> Настройки</button>
+			</nav>
+			<div class="sidebar-bottom">
+				<div class="help-card"><strong>Нужна помощь?</strong>
+					<p>Подсказки по работе с клиническими случаями.</p><button id="helpBtn">Открыть центр помощи ↗</button>
+				</div>
+				<div class="profile">
+					<div class="avatar">ДС</div>
+					<div><b>Доктор Саид</b><span>Стоматолог · Демо-аккаунт</span></div><span
+						style="margin-left:auto">⌄</span>
+				</div>
+			</div>
+		</aside>
+		<main class="main">
+			<header class="topbar">
+				<div style="display:flex;align-items:center;gap:12px"><button class="icon-btn mobile-menu" id="menuBtn"
+						aria-label="Открыть меню">☰</button>
+					<div class="breadcrumb">Рабочее пространство&nbsp; / &nbsp;<b id="crumb">Обзор</b></div>
+				</div>
+				<div class="top-actions"><button class="icon-btn" id="noticeBtn" aria-label="Уведомления">♧<i
+							class="dot"></i></button><button class="primary" id="addPatientBtn">＋ <span
+							class="desktop-label">Добавить пациента</span><span class="mobile-label"
+							style="display:none">Пациент</span></button></div>
+			</header>
+			<div class="content">
+				<section class="greeting">
+					<div>
+						<h1 id="pageTitle">Добрый день, доктор Саид 👋</h1>
+						<p class="subtitle" id="pageSubtitle">Вот что происходит в вашей практике сегодня.</p>
+					</div>
+					<div class="date-chip">▦ <span id="todayDate">17 октября 2026</span></div>
+				</section>
+				<section class="stats" aria-label="Статистика практики">
+					<article class="stat">
+						<div class="stat-top"><span>Всего пациентов</span><span class="stat-icon">♙</span></div>
+						<div class="stat-value" id="totalPatients">128</div>
+						<div class="stat-note"><em>+8</em> за последние 30 дней</div>
+					</article>
+					<article class="stat">
+						<div class="stat-top"><span>Клинические случаи</span><span class="stat-icon">▧</span></div>
+						<div class="stat-value">36</div>
+						<div class="stat-note">12 требуют продолжения</div>
+					</article>
+					<article class="stat">
+						<div class="stat-top"><span>Фотографии</span><span class="stat-icon">▤</span></div>
+						<div class="stat-value">842</div>
+						<div class="stat-note">В 94 клинических подборках</div>
+					</article>
+					<article class="stat">
+						<div class="stat-top"><span>На этой неделе</span><span class="stat-icon">◷</span></div>
+						<div class="stat-value">14</div>
+						<div class="stat-note">Записей в истории визитов</div>
+					</article>
+				</section>
+				<section class="columns">
+					<article class="panel" id="patientsPanel">
+						<div class="panel-head">
+							<div>
+								<h2>Пациенты</h2>
+								<p>Быстрый доступ к карточкам пациентов</p>
+							</div><button class="text-btn" id="allPatientsBtn">Все пациенты ↗</button>
+						</div>
+						<div class="search-wrap"><span>⌕</span><input class="search" id="patientSearch" type="search"
+								placeholder="Поиск по имени или номеру…" autocomplete="off" aria-label="Поиск пациентов"></div>
+						<div class="patient-list" id="patientList"></div>
+					</article>
+					<article class="panel" id="casesPanel">
+						<div class="panel-head">
+							<div>
+								<h2>Последние случаи</h2>
+								<p>Недавно обновлённые клинические кейсы</p>
+							</div><button class="text-btn" id="allCasesBtn">Все случаи ↗</button>
+						</div>
+						<div class="case-list" id="caseList"></div>
+					</article>
+				</section>
+				<p class="footer-note">Демонстрационный прототип · Все имена и данные вымышлены · Не для хранения реальных
+					медицинских данных</p>
+			</div>
+		</main>
+	</div>
+	<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+		<section class="modal">
+			<div class="modal-head">
+				<div>
+					<h2 id="modalTitle">Фотогалерея пациента</h2>
+					<p id="modalSubtitle">Демо-галерея клинического случая</p>
+				</div><button class="close" id="closeModal" aria-label="Закрыть">✕</button>
+			</div>
+			<div class="modal-content" id="modalContent"></div>
+		</section>
+	</div>
+	<div class="toast" id="toast" role="status"></div>
+	<script>
+		const patients = [
+			{ id: 'DC-1048', name: 'Алина Миронова', initials: 'АМ', color: '#d9efec', age: 32, last: 'Сегодня', case: 'Эстетическая реставрация', status: 'Активный', count: 8 },
+			{ id: 'DC-1047', name: 'Тимур Абдрахманов', initials: 'ТА', color: '#e4e8fb', age: 41, last: 'Вчера', case: 'Ортодонтическое лечение', status: 'Активный', count: 12 },
+			{ id: 'DC-1046', name: 'Елена Ким', initials: 'ЕК', color: '#f5e7d9', age: 28, last: '15 окт.', case: 'Отбеливание', status: 'Наблюдение', count: 6 },
+			{ id: 'DC-1045', name: 'Марк Соколов', initials: 'МС', color: '#e9e1f6', age: 54, last: '14 окт.', case: 'Имплантация', status: 'Активный', count: 15 },
+			{ id: 'DC-1044', name: 'София Ибраева', initials: 'СИ', color: '#f6e4e6', age: 36, last: '12 окт.', case: 'Эстетическая реставрация', status: 'Завершён', count: 9 },
+			{ id: 'DC-1043', name: 'Данияр Осмонов', initials: 'ДО', color: '#e4efe0', age: 45, last: '10 окт.', case: 'Пародонтология', status: 'Наблюдение', count: 4 }
+		];
+		const cases = [
+			{ id: 'CASE-026', patient: 'Алина Миронова', patientId: 'DC-1048', title: 'Эстетическая реставрация', type: 'Реставрация', date: 'Сегодня, 10:42', photos: 8, stage: 'В процессе', glyph: '✧' },
+			{ id: 'CASE-025', patient: 'Тимур Абдрахманов', patientId: 'DC-1047', title: 'Контроль ортодонтического лечения', type: 'Ортодонтия', date: 'Вчера, 16:15', photos: 12, stage: 'Контроль', glyph: '⌁' },
+			{ id: 'CASE-024', patient: 'Елена Ким', patientId: 'DC-1046', title: 'Отбеливание · контроль результата', type: 'Эстетика', date: '15 окт., 12:30', photos: 6, stage: 'Завершён', glyph: '✦' }
+		];
+		let activePatient = null;
+		const $ = id => document.getElementById(id);
+		function toast(message) { const t = $('toast'); t.textContent = message; t.classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.remove('show'), 2400) }
+		function renderPatients(query = '') {
+			const filtered = patients.filter(p => (p.name + ' ' + p.id + ' ' + p.case).toLowerCase().includes(query.toLowerCase()));
+			$('patientList').innerHTML = filtered.length ? filtered.slice(0, 5).map(p => `<button class="patient" data-patient="${p.id}"><span class="avatar" style="background:${p.color}">${p.initials}</span><span class="patient-info"><b>${p.name}</b><span>${p.id} · ${p.case}</span></span><span class="patient-meta"><b>${p.last}</b><span>${p.count} фото</span></span></button>`).join('') : '<div class="empty">Ничего не найдено. Попробуйте другое имя или номер.</div>';
+		}
+		function renderCases() { $('caseList').innerHTML = cases.map(c => `<div class="case" role="button" tabindex="0" data-case="${c.id}"><div class="case-art"><span>${c.glyph}</span></div><div class="case-body"><div class="case-title">${c.title}</div><div class="case-sub">${c.patient} · ${c.id}</div><div class="case-bottom"><small>${c.date} · ${c.photos} фото</small><span class="tag">${c.stage}</span></div></div></div>`).join(''); }
+		function openGallery(patient) { activePatient = patient; const patientCases = cases.filter(c => c.patientId === patient.id); $('modalTitle').textContent = patient.name; $('modalSubtitle').textContent = `${patient.id} · ${patient.age} лет · ${patient.count} фотографий в демо-галерее`; $('modalContent').innerHTML = `<div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap"><span class="status">${patient.status}</span><span class="tag">${patient.case}</span><span class="tag">Последнее обновление: ${patient.last}</span></div><h3 style="font-size:13px;margin:0 0 12px">Фотографии и материалы</h3><div class="gallery-grid">${['До лечения', 'Первый визит', 'Промежуточный этап', 'Контроль', 'После лечения', 'Дополнительный снимок'].map((label, i) => `<div class="gallery-item"><div class="photo" style="filter:hue-rotate(${i * 13}deg)"><span>ДЕМО · ${String(i + 1).padStart(2, '0')}</span></div><b>${label}</b><small>${['02 окт. 2026', '05 окт. 2026', '08 окт. 2026', '12 окт. 2026', '15 окт. 2026', '17 окт. 2026'][i]}</small></div>`).join('')}</div><div class="modal-actions"><button class="primary" id="uploadDemo">＋ Добавить фото</button><button class="secondary" id="compareDemo">⇄ Сравнить фото</button><button class="secondary" id="timelineDemo">◷ История визитов</button></div><p style="color:var(--muted);font-size:10px;margin:16px 0 0">Это интерактивный демонстрационный экран. Фотографии условные, загрузка в хранилище пока не реализована.</p>`; $('overlay').classList.add('show'); $('uploadDemo').onclick = () => toast('В следующем этапе добавим загрузку изображений'); $('compareDemo').onclick = () => toast('Сравнение «до/после» добавим следующим этапом'); $('timelineDemo').onclick = () => toast('История визитов пока демонстрационная'); }
+		function openCase(id) { const c = cases.find(x => x.id === id); const p = patients.find(x => x.id === c.patientId); openGallery(p) }
+		function setPage(nav) { const labels = { dashboard: ['Обзор', 'Добрый день, доктор Саид 👋', 'Вот что происходит в вашей практике сегодня.'], patients: ['Пациенты', 'Ваши пациенты', 'Найдите пациента и откройте его клиническую галерею.'], cases: ['Клинические случаи', 'Клинические случаи', 'Недавно обновлённые кейсы вашей практики.'], gallery: ['Фотогалерея', 'Фотогалерея', 'Откройте пациента, чтобы посмотреть демо-изображения.'], timeline: ['История визитов', 'История визитов', 'Хронология в этом прототипе представлена демонстрационными данными.'], portfolio: ['Портфолио', 'Портфолио', 'Подборки клинических случаев — демонстрационный раздел.'], settings: ['Настройки', 'Настройки', 'Настройки профиля будут добавлены в следующем этапе.'] }; const data = labels[nav] || labels.dashboard; $('crumb').textContent = data[0]; $('pageTitle').textContent = data[1]; $('pageSubtitle').textContent = data[2]; document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === nav)); $('sidebar').classList.remove('open'); if (nav === 'patients' || nav === 'gallery') { $('patientsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); if (nav === 'patients') $('patientSearch').focus({ preventScroll: true }); } else if (nav === 'cases') $('casesPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); else if (nav !== 'dashboard') toast('Раздел «' + data[0] + '» — следующий этап разработки'); }
+		$('patientSearch').addEventListener('input', e => renderPatients(e.target.value)); $('patientList').addEventListener('click', e => { const b = e.target.closest('[data-patient]'); if (b) openGallery(patients.find(p => p.id === b.dataset.patient)) }); $('caseList').addEventListener('click', e => { const c = e.target.closest('[data-case]'); if (c) openCase(c.dataset.case) }); $('caseList').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-case]')) { e.preventDefault(); openCase(e.target.dataset.case) } }); document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => setPage(b.dataset.nav))); $('allPatientsBtn').onclick = () => { setPage('patients'); $('patientSearch').value = ''; renderPatients() }; $('allCasesBtn').onclick = () => setPage('cases'); $('addPatientBtn').onclick = () => toast('Форма добавления пациента будет реализована в следующем этапе'); $('noticeBtn').onclick = () => toast('Новых уведомлений нет'); $('helpBtn').onclick = () => toast('Подсказка: выберите пациента, чтобы открыть его демо-галерею'); $('menuBtn').onclick = () => $('sidebar').classList.toggle('open'); $('closeModal').onclick = () => $('overlay').classList.remove('show'); $('overlay').addEventListener('click', e => { if (e.target === $('overlay')) $('overlay').classList.remove('show') }); document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('overlay').classList.remove('show'); $('sidebar').classList.remove('open') } });
+		$('todayDate').textContent = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date()); renderPatients(); renderCases();
+	</script>
+</body>
+
+</html>
