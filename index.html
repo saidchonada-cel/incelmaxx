@@ -692,6 +692,45 @@
 			padding: 20px 22px 24px;
 		}
 
+		.patient-form {
+			display: grid;
+			gap: 14px;
+		}
+
+		.patient-form label {
+			display: grid;
+			gap: 6px;
+			font-weight: 650;
+			font-size: 12px;
+		}
+
+		.patient-form input {
+			width: 100%;
+			padding: 11px 12px;
+			border: 1px solid var(--line);
+			border-radius: 9px;
+			background: var(--surface2);
+			color: var(--text);
+		}
+
+		.patient-form input:focus {
+			outline: 2px solid var(--teal);
+			outline-offset: 1px;
+		}
+
+		.patient-form .form-note {
+			margin: 0;
+			color: var(--muted);
+			font-size: 11px;
+		}
+
+		.form-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 9px;
+			margin-top: 4px;
+		}
+
 		.gallery-grid {
 			display: grid;
 			grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1083,6 +1122,11 @@
 			{ id: 'DC-1044', name: 'София Ибраева', initials: 'СИ', color: '#f6e4e6', age: 36, last: '12 окт.', case: 'Эстетическая реставрация', status: 'Завершён', count: 9 },
 			{ id: 'DC-1043', name: 'Данияр Осмонов', initials: 'ДО', color: '#e4efe0', age: 45, last: '10 окт.', case: 'Пародонтология', status: 'Наблюдение', count: 4 }
 		];
+		const patientStorageKey = 'incelmaxx-demo-patients-v1';
+		try {
+			const savedPatients = JSON.parse(localStorage.getItem(patientStorageKey) || '[]');
+			if (Array.isArray(savedPatients)) patients.push(...savedPatients.filter(p => p && typeof p.id === 'string' && typeof p.name === 'string'));
+		} catch { /* Если сохранённые данные повреждены, продолжаем с демо-списком. */ }
 		const cases = [
 			{ id: 'CASE-026', patient: 'Алина Миронова', patientId: 'DC-1048', title: 'Эстетическая реставрация', type: 'Реставрация', date: 'Сегодня, 10:42', photos: 8, stage: 'В процессе', glyph: '✧' },
 			{ id: 'CASE-025', patient: 'Тимур Абдрахманов', patientId: 'DC-1047', title: 'Контроль ортодонтического лечения', type: 'Ортодонтия', date: 'Вчера, 16:15', photos: 12, stage: 'Контроль', glyph: '⌁' },
@@ -1090,17 +1134,48 @@
 		];
 		let activePatient = null;
 		const $ = id => document.getElementById(id);
+		function escapeHtml(value) { return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
 		function toast(message) { const t = $('toast'); t.textContent = message; t.classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.remove('show'), 2400) }
 		function renderPatients(query = '') {
-			const filtered = patients.filter(p => (p.name + ' ' + p.id + ' ' + p.case).toLowerCase().includes(query.toLowerCase()));
-			$('patientList').innerHTML = filtered.length ? filtered.slice(0, 5).map(p => `<button class="patient" data-patient="${p.id}"><span class="avatar" style="background:${p.color}">${p.initials}</span><span class="patient-info"><b>${p.name}</b><span>${p.id} · ${p.case}</span></span><span class="patient-meta"><b>${p.last}</b><span>${p.count} фото</span></span></button>`).join('') : '<div class="empty">Ничего не найдено. Попробуйте другое имя или номер.</div>';
+			const normalizedQuery = query.trim().toLocaleLowerCase('ru');
+			const filtered = patients.filter(p => (p.name + ' ' + p.id + ' ' + p.case).toLocaleLowerCase('ru').includes(normalizedQuery));
+			const visible = normalizedQuery ? filtered : filtered.slice(0, 5);
+			$('patientList').innerHTML = visible.length ? visible.map(p => `<button class="patient" data-patient="${escapeHtml(p.id)}"><span class="avatar" style="background:${escapeHtml(p.color)}">${escapeHtml(p.initials)}</span><span class="patient-info"><b>${escapeHtml(p.name)}</b><span>${escapeHtml(p.id)} · ${escapeHtml(p.case)}</span></span><span class="patient-meta"><b>${escapeHtml(p.last)}</b><span>${escapeHtml(p.count)} фото</span></span></button>`).join('') : '<div class="empty">Ничего не найдено. Попробуйте другое имя или номер.</div>';
+		}
+		function savePatients() {
+			const demoPatients = patients.filter(p => p.createdInDemo);
+			try { localStorage.setItem(patientStorageKey, JSON.stringify(demoPatients)); return true; }
+			catch { toast('Браузер не смог сохранить данные. Освободите место и попробуйте снова.'); return false; }
+		}
+		function openAddPatientForm() {
+			$('modalTitle').textContent = 'Новый демонстрационный пациент';
+			$('modalSubtitle').textContent = 'Запись сохранится только в этом браузере.';
+			$('modalContent').innerHTML = `<form class="patient-form" id="patientForm"><label for="newPatientName">Имя пациента</label><input id="newPatientName" name="name" maxlength="60" required autocomplete="off" placeholder="Например, Арман Тестовый"><p class="form-note">Используйте только вымышленные данные. Медицинские сведения не запрашиваются.</p><div class="form-actions"><button class="secondary" type="button" id="cancelPatient">Отмена</button><button class="primary" type="submit">＋ Создать</button></div></form>`;
+			$('overlay').classList.add('show');
+			$('cancelPatient').onclick = () => $('overlay').classList.remove('show');
+			$('patientForm').addEventListener('submit', event => {
+				event.preventDefault();
+				const name = $('newPatientName').value.trim().replace(/\s+/g, ' ');
+				if (name.length < 2) { $('newPatientName').setCustomValidity('Введите имя длиной не менее двух символов.'); $('newPatientName').reportValidity(); $('newPatientName').setCustomValidity(''); return; }
+				const nextNumber = Math.max(1048, ...patients.map(p => Number((p.id.match(/(\d+)$/) || [0, 1048])[1]))) + 1;
+				const initials = name.split(' ').slice(0, 2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase('ru');
+				const patient = { id: `DC-${nextNumber}`, name, initials, color: '#e4efe0', age: 30, last: 'Только что', case: 'Демо-профиль', status: 'Новый', count: 0, createdInDemo: true };
+				patients.unshift(patient);
+				if (!savePatients()) { patients.shift(); return; }
+				$('overlay').classList.remove('show');
+				$('totalPatients').textContent = String(128 + patients.filter(p => p.createdInDemo).length);
+				$('patientSearch').value = patient.id;
+				renderPatients(patient.id);
+				toast('Демонстрационный пациент создан и сохранён в этом браузере.');
+			});
+			$('newPatientName').focus();
 		}
 		function renderCases() { $('caseList').innerHTML = cases.map(c => `<div class="case" role="button" tabindex="0" data-case="${c.id}"><div class="case-art"><span>${c.glyph}</span></div><div class="case-body"><div class="case-title">${c.title}</div><div class="case-sub">${c.patient} · ${c.id}</div><div class="case-bottom"><small>${c.date} · ${c.photos} фото</small><span class="tag">${c.stage}</span></div></div></div>`).join(''); }
 		function openGallery(patient) { activePatient = patient; const patientCases = cases.filter(c => c.patientId === patient.id); $('modalTitle').textContent = patient.name; $('modalSubtitle').textContent = `${patient.id} · ${patient.age} лет · ${patient.count} фотографий в демо-галерее`; $('modalContent').innerHTML = `<div style="display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap"><span class="status">${patient.status}</span><span class="tag">${patient.case}</span><span class="tag">Последнее обновление: ${patient.last}</span></div><h3 style="font-size:13px;margin:0 0 12px">Фотографии и материалы</h3><div class="gallery-grid">${['До лечения', 'Первый визит', 'Промежуточный этап', 'Контроль', 'После лечения', 'Дополнительный снимок'].map((label, i) => `<div class="gallery-item"><div class="photo" style="filter:hue-rotate(${i * 13}deg)"><span>ДЕМО · ${String(i + 1).padStart(2, '0')}</span></div><b>${label}</b><small>${['02 окт. 2026', '05 окт. 2026', '08 окт. 2026', '12 окт. 2026', '15 окт. 2026', '17 окт. 2026'][i]}</small></div>`).join('')}</div><div class="modal-actions"><button class="primary" id="uploadDemo">＋ Добавить фото</button><button class="secondary" id="compareDemo">⇄ Сравнить фото</button><button class="secondary" id="timelineDemo">◷ История визитов</button></div><p style="color:var(--muted);font-size:10px;margin:16px 0 0">Это интерактивный демонстрационный экран. Фотографии условные, загрузка в хранилище пока не реализована.</p>`; $('overlay').classList.add('show'); $('uploadDemo').onclick = () => toast('В следующем этапе добавим загрузку изображений'); $('compareDemo').onclick = () => toast('Сравнение «до/после» добавим следующим этапом'); $('timelineDemo').onclick = () => toast('История визитов пока демонстрационная'); }
 		function openCase(id) { const c = cases.find(x => x.id === id); const p = patients.find(x => x.id === c.patientId); openGallery(p) }
 		function setPage(nav) { const labels = { dashboard: ['Обзор', 'Добрый день, доктор Саид 👋', 'Вот что происходит в вашей практике сегодня.'], patients: ['Пациенты', 'Ваши пациенты', 'Найдите пациента и откройте его клиническую галерею.'], cases: ['Клинические случаи', 'Клинические случаи', 'Недавно обновлённые кейсы вашей практики.'], gallery: ['Фотогалерея', 'Фотогалерея', 'Откройте пациента, чтобы посмотреть демо-изображения.'], timeline: ['История визитов', 'История визитов', 'Хронология в этом прототипе представлена демонстрационными данными.'], portfolio: ['Портфолио', 'Портфолио', 'Подборки клинических случаев — демонстрационный раздел.'], settings: ['Настройки', 'Настройки', 'Настройки профиля будут добавлены в следующем этапе.'] }; const data = labels[nav] || labels.dashboard; $('crumb').textContent = data[0]; $('pageTitle').textContent = data[1]; $('pageSubtitle').textContent = data[2]; document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === nav)); $('sidebar').classList.remove('open'); if (nav === 'patients' || nav === 'gallery') { $('patientsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); if (nav === 'patients') $('patientSearch').focus({ preventScroll: true }); } else if (nav === 'cases') $('casesPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); else if (nav !== 'dashboard') toast('Раздел «' + data[0] + '» — следующий этап разработки'); }
-		$('patientSearch').addEventListener('input', e => renderPatients(e.target.value)); $('patientList').addEventListener('click', e => { const b = e.target.closest('[data-patient]'); if (b) openGallery(patients.find(p => p.id === b.dataset.patient)) }); $('caseList').addEventListener('click', e => { const c = e.target.closest('[data-case]'); if (c) openCase(c.dataset.case) }); $('caseList').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-case]')) { e.preventDefault(); openCase(e.target.dataset.case) } }); document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => setPage(b.dataset.nav))); $('allPatientsBtn').onclick = () => { setPage('patients'); $('patientSearch').value = ''; renderPatients() }; $('allCasesBtn').onclick = () => setPage('cases'); $('addPatientBtn').onclick = () => toast('Форма добавления пациента будет реализована в следующем этапе'); $('noticeBtn').onclick = () => toast('Новых уведомлений нет'); $('helpBtn').onclick = () => toast('Подсказка: выберите пациента, чтобы открыть его демо-галерею'); $('menuBtn').onclick = () => $('sidebar').classList.toggle('open'); $('closeModal').onclick = () => $('overlay').classList.remove('show'); $('overlay').addEventListener('click', e => { if (e.target === $('overlay')) $('overlay').classList.remove('show') }); document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('overlay').classList.remove('show'); $('sidebar').classList.remove('open') } });
-		$('todayDate').textContent = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date()); renderPatients(); renderCases();
+		$('patientSearch').addEventListener('input', e => renderPatients(e.target.value)); $('patientList').addEventListener('click', e => { const b = e.target.closest('[data-patient]'); if (b) openGallery(patients.find(p => p.id === b.dataset.patient)) }); $('caseList').addEventListener('click', e => { const c = e.target.closest('[data-case]'); if (c) openCase(c.dataset.case) }); $('caseList').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-case]')) { e.preventDefault(); openCase(e.target.dataset.case) } }); document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => setPage(b.dataset.nav))); $('allPatientsBtn').onclick = () => { setPage('patients'); $('patientSearch').value = ''; renderPatients() }; $('allCasesBtn').onclick = () => setPage('cases'); $('addPatientBtn').onclick = openAddPatientForm; $('noticeBtn').onclick = () => toast('Новых уведомлений нет'); $('helpBtn').onclick = () => toast('Подсказка: выберите пациента, чтобы открыть его демо-галерею'); $('menuBtn').onclick = () => $('sidebar').classList.toggle('open'); $('closeModal').onclick = () => $('overlay').classList.remove('show'); $('overlay').addEventListener('click', e => { if (e.target === $('overlay')) $('overlay').classList.remove('show') }); document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('overlay').classList.remove('show'); $('sidebar').classList.remove('open') } });
+		$('todayDate').textContent = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date()); $('totalPatients').textContent = String(128 + patients.filter(p => p.createdInDemo).length); renderPatients(); renderCases();
 	</script>
 </body>
 
